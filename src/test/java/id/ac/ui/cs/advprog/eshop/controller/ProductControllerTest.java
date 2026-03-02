@@ -33,7 +33,7 @@ class ProductControllerTest {
 
         String viewName = controller.createProductPage(model);
 
-        assertEquals("CreateProduct", viewName);
+        assertEquals("createProduct", viewName);
         assertNotNull(model.getAttribute("product"));
     }
 
@@ -41,7 +41,7 @@ class ProductControllerTest {
     void createProductShouldCallServiceAndRedirectToList() {
         Product product = new Product();
 
-        String redirect = controller.createProduct(product, new ExtendedModelMap());
+        String redirect = controller.createProductPost(product, new ExtendedModelMap());
 
         verify(service).create(product);
         assertEquals("redirect:list", redirect);
@@ -52,15 +52,14 @@ class ProductControllerTest {
         String productId = "p-1";
         Product product = new Product();
         product.setProductId(productId);
-        Optional<Product> expected = Optional.of(product);
-        when(service.findById(productId)).thenReturn(expected);
+        when(service.findById(productId)).thenReturn(product);
         Model model = new ExtendedModelMap();
 
         String viewName = controller.editProductPage(productId, model);
 
         verify(service).findById(productId);
-        assertEquals("EditProduct", viewName);
-        assertEquals(expected, model.getAttribute("product"));
+        assertEquals("editProduct", viewName);
+        assertEquals(product, model.getAttribute("product"));
     }
 
     @Test
@@ -68,9 +67,9 @@ class ProductControllerTest {
         Product product = new Product();
         product.setProductId("p-1");
 
-        String redirect = controller.editProduct(product);
+        String redirect = controller.editProductPost(product, new ExtendedModelMap());
 
-        verify(service).edit(product);
+        verify(service).update("p-1", product);
         assertEquals("redirect:list", redirect);
     }
 
@@ -78,8 +77,8 @@ class ProductControllerTest {
     void deleteProductShouldCallServiceAndRedirectToListPage() {
         String redirect = controller.deleteProduct("p-1");
 
-        verify(service).delete("p-1");
-        assertEquals("redirect:/product/list", redirect);
+        verify(service).deleteById("p-1");
+        assertEquals("redirect:list", redirect);
     }
 
     @Test
@@ -90,10 +89,10 @@ class ProductControllerTest {
         when(service.findAll()).thenReturn(products);
         Model model = new ExtendedModelMap();
 
-        String viewName = controller.productlistPage(model);
+        String viewName = controller.productListPage(model);
 
         verify(service).findAll();
-        assertEquals("ProductList", viewName);
-        assertEquals(products, model.getAttribute("allProduct"));
+        assertEquals("productList", viewName);
+        assertEquals(products, model.getAttribute("products"));
     }
 }

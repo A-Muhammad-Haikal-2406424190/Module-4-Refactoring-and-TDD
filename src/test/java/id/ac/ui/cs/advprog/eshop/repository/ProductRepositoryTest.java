@@ -7,14 +7,13 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductRepositoryTest {
     @InjectMocks
-    ProductRepository productRepository;
+    ProductRepositoryImpl productRepository;
 
     @Test
     void testCreateAndFind() {
@@ -73,15 +72,15 @@ class ProductRepositoryTest {
         updatedProduct.setProductId(product.getProductId());
         updatedProduct.setProductName("Sampo Cap Bambang Baru");
         updatedProduct.setProductQuantity(200);
-        
-        Product result = productRepository.edit(updatedProduct);
+
+        Product result = productRepository.update(updatedProduct.getProductId(), updatedProduct);
 
         assertNotNull(result);
         assertEquals(updatedProduct.getProductId(), result.getProductId());
         assertEquals(updatedProduct.getProductName(), result.getProductName());
         assertEquals(updatedProduct.getProductQuantity(), result.getProductQuantity());
 
-        Product savedProduct = productRepository.findById(product.getProductId()).orElse(null);
+        Product savedProduct = productRepository.findById(product.getProductId());
         assertNotNull(savedProduct);
         assertEquals("Sampo Cap Bambang Baru", savedProduct.getProductName());
         assertEquals(200, savedProduct.getProductQuantity());
@@ -100,7 +99,7 @@ class ProductRepositoryTest {
         nonExistentProduct.setProductName("Sampo Palsu");
         nonExistentProduct.setProductQuantity(50);
 
-        Product result = productRepository.edit(nonExistentProduct);
+        Product result = productRepository.update(nonExistentProduct.getProductId(), nonExistentProduct);
 
         assertNull(result);
     }
@@ -118,7 +117,7 @@ class ProductRepositoryTest {
         nullIdProduct.setProductName("Sampo Tanpa ID");
         nullIdProduct.setProductQuantity(50);
 
-        Product result = productRepository.edit(nullIdProduct);
+        Product result = productRepository.update(nullIdProduct.getProductId(), nullIdProduct);
 
         assertNull(result);
     }
@@ -135,9 +134,9 @@ class ProductRepositoryTest {
 
         Iterator<Product> productIterator = productRepository.findAll();
         assertFalse(productIterator.hasNext());
-        
-        Optional<Product> deletedProduct = productRepository.findById(product.getProductId());
-        assertTrue(deletedProduct.isEmpty());
+
+        Product deletedProduct = productRepository.findById(product.getProductId());
+        assertNull(deletedProduct);
     }
 
     @Test
@@ -193,13 +192,13 @@ class ProductRepositoryTest {
 
     @Test
     void testEditNullProduct() {
-        Product result = productRepository.edit(null);
+        Product result = productRepository.update(null, null);
         assertNull(result);
     }
 
     @Test
     void testFindByIdNotFound() {
-        Optional<Product> missingProduct = productRepository.findById("missing-id");
-        assertTrue(missingProduct.isEmpty());
+        Product missingProduct = productRepository.findById("missing-id");
+        assertNull(missingProduct);
     }
 }

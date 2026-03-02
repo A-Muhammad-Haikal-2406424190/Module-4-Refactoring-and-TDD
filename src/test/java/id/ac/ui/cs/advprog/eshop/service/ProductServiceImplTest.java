@@ -58,29 +58,27 @@ class ProductServiceImplTest {
     void findByIdShouldDelegateToRepository() {
         Product product = new Product();
         product.setProductId("p-1");
-        when(productRepository.findById("p-1")).thenReturn(Optional.of(product));
+        when(productRepository.findById("p-1")).thenReturn(product);
 
-        Optional<Product> result = productService.findById("p-1");
+        Product result = productService.findById("p-1");
 
-        assertTrue(result.isPresent());
-        assertEquals("p-1", result.get().getProductId());
+        assertEquals("p-1", result.getProductId());
     }
 
     @Test
     void editShouldDelegateToRepository() {
         Product product = new Product();
         product.setProductId("p-1");
-        when(productRepository.edit(product)).thenReturn(product);
+        when(productRepository.update("p-1", product)).thenReturn(product);
 
-        Product result = productService.edit(product);
+        productService.update("p-1", product);
 
-        assertSame(product, result);
-        verify(productRepository).edit(product);
+        verify(productRepository).update("p-1", product);
     }
 
     @Test
     void deleteShouldDelegateToRepository() {
-        productService.delete("p-1");
+        productService.deleteById("p-1");
 
         verify(productRepository).delete("p-1");
     }
