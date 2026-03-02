@@ -13,8 +13,12 @@ import java.util.List;
 @RequestMapping("/car")
 public class CarController {
 
+    private final CarService carservice;
+
     @Autowired
-    private CarService carservice;
+    public CarController(CarService carservice) {
+        this.carservice = carservice;
+    }
 
     @GetMapping("/createCar")
     public String createCarPage(Model model) {
