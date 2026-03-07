@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,10 @@ import java.util.List;
 @Controller
 @RequestMapping("/order")
 public class OrderController {
+    private static final String ORDER_HISTORY_VIEW = "OrderHistory";
+    private static final String CREATE_ORDER_VIEW = "CreateOrder";
+    private static final String ORDERS_ATTRIBUTE = "orders";
+    private static final String ORDER_ATTRIBUTE = "order";
 
     private final OrderService orderService;
 
@@ -26,21 +30,25 @@ public class OrderController {
 
     @GetMapping("/create")
     public String createOrderPage(Model model) {
-        model.addAttribute("order", new OrderForm());
-        return "CreateOrder";
+        model.addAttribute(ORDER_ATTRIBUTE, new OrderForm());
+        return CREATE_ORDER_VIEW;
     }
 
     @GetMapping("/history")
-    public String orderHistoryPage(Model model) {
-        model.addAttribute("orders", new ArrayList<Order>());
-        return "OrderHistory";
+    public String orderHistoryGet(Model model) {
+        setOrdersToModel(model, new ArrayList<>());
+        return ORDER_HISTORY_VIEW;
     }
 
     @PostMapping("/history")
-    public String orderHistoryPost(@RequestParam("author") String author, Model model) {
-        List<Order> orders = orderService.findAllByAuthor(author);
-        model.addAttribute("orders", orders);
-        return "OrderHistory";
+    public String orderHistoryPost(@ModelAttribute OrderForm orderForm, Model model) {
+        List<Order> orders = orderService.findAllByAuthor(orderForm.getAuthor());
+        setOrdersToModel(model, orders);
+        return ORDER_HISTORY_VIEW;
+    }
+
+    private void setOrdersToModel(Model model, List<Order> orders) {
+        model.addAttribute(ORDERS_ATTRIBUTE, orders);
     }
 
     public static class OrderForm {
