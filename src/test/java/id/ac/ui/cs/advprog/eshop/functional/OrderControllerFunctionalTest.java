@@ -56,4 +56,28 @@ class OrderControllerFunctionalTest {
         String historyUrl = driver.getCurrentUrl();
         assertEquals(String.format("%s/order/history", baseUrl), historyUrl);
     }
+
+    @Test
+    void orderPayPageTitle_isCorrect(ChromeDriver driver) {
+        driver.get(String.format("%s/order/pay/13652556-012a-4c07-b546-54eb1396d79b", baseUrl));
+        String pageTitle = driver.getTitle();
+        assertEquals("Order Pay", pageTitle);
+    }
+
+    @Test
+    void payOrder_isSuccessful(ChromeDriver driver) {
+        driver.get(String.format("%s/order/pay/13652556-012a-4c07-b546-54eb1396d79b", baseUrl));
+        WebElement methodInputField = driver.findElement(By.id("methodInput"));
+        methodInputField.sendKeys("VOUCHER_CODE");
+        WebElement voucherCodeInputField = driver.findElement(By.id("voucherCodeInput"));
+        voucherCodeInputField.sendKeys("ESHOP1234ABC5678");
+        WebElement submitButton = driver.findElement(By.tagName("button"));
+        submitButton.click();
+
+        String payResultUrl = driver.getCurrentUrl();
+        assertEquals(
+                String.format("%s/order/pay/13652556-012a-4c07-b546-54eb1396d79b", baseUrl),
+                payResultUrl
+        );
+    }
 }

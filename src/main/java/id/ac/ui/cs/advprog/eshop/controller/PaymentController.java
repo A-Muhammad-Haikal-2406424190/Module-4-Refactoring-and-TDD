@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +74,10 @@ public class PaymentController {
 
     private Payment getPaymentOrEmpty(String paymentId) {
         Payment payment = paymentService.getPayment(paymentId);
-        return payment != null ? payment : new Payment();
+        if (payment != null) {
+            return payment;
+        }
+        return new Payment(paymentId, "", Payment.REJECTED, new HashMap<>());
     }
 
     private void addPaymentsToModel(Model model) {
