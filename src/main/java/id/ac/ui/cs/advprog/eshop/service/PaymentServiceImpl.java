@@ -21,6 +21,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = buildNewPayment(method, paymentData);
+        if ("VOUCHER_CODE".equals(method) && isVoucherCodeValid(paymentData)) {
+            payment.setStatus(Payment.SUCCESS);
+        }
         paymentOrderMap.put(payment.getId(), order);
         return paymentRepository.save(payment);
     }
@@ -49,6 +52,15 @@ public class PaymentServiceImpl implements PaymentService {
                 Payment.REJECTED,
                 paymentData
         );
+    }
+
+    private boolean isVoucherCodeValid(Map<String, String> paymentData) {
+        String voucherCode = paymentData.get("voucherCode");
+        return hasVoucherCodeFormat(voucherCode);
+    }
+
+    private boolean hasVoucherCodeFormat(String voucherCode) {
+        return false;
     }
 
     private void syncOrderStatus(Payment payment, String paymentStatus) {
