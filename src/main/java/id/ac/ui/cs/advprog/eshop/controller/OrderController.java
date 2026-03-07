@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.eshop.controller;
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.service.OrderService;
+import id.ac.ui.cs.advprog.eshop.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,12 +28,15 @@ public class OrderController {
     private static final String ORDER_PAY_RESULT_VIEW = "OrderPayResult";
     private static final String ORDERS_ATTRIBUTE = "orders";
     private static final String ORDER_ATTRIBUTE = "order";
+    private static final String PAYMENT_ATTRIBUTE = "payment";
 
     private final OrderService orderService;
+    private final PaymentService paymentService;
 
     @Autowired
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, PaymentService paymentService) {
         this.orderService = orderService;
+        this.paymentService = paymentService;
     }
 
     @GetMapping("/create")
@@ -56,7 +60,12 @@ public class OrderController {
 
     @GetMapping("/pay/{orderId}")
     public String payOrderPage(@PathVariable String orderId, Model model) {
-        model.addAttribute(ORDER_ATTRIBUTE, new OrderPayViewModel(orderId, "", ""));
+        Order order = orderService.findById(orderId);
+        if (order != null) {
+            model.addAttribute(ORDER_ATTRIBUTE, order);
+        } else {
+            model.addAttribute(ORDER_ATTRIBUTE, new OrderPayViewModel(orderId, "", ""));
+        }
         return ORDER_PAY_VIEW;
     }
 
@@ -73,8 +82,10 @@ public class OrderController {
         paymentData.put("voucherCode", voucherCode);
         paymentData.put("bankName", bankName);
         paymentData.put("referenceCode", referenceCode);
-        Payment payment = new Payment("payment-skeleton", method, Payment.REJECTED, paymentData);
-        model.addAttribute("payment", payment);
+
+        Order order = orderService.findById(orderId);
+        Payment payment = paymentService.addPayment(order, method, paymentData);
+        model.addAttribute(PAYMENT_ATTRIBUTE, payment);
         return ORDER_PAY_RESULT_VIEW;
     }
 
