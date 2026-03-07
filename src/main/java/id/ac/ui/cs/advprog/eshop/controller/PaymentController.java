@@ -22,6 +22,7 @@ public class PaymentController {
     private static final String PAYMENT_DETAIL_VIEW = "PaymentDetail";
     private static final String PAYMENT_ADMIN_LIST_VIEW = "PaymentAdminList";
     private static final String PAYMENT_ADMIN_DETAIL_VIEW = "PaymentAdminDetail";
+    private static final String PAYMENT_ADMIN_DETAIL_REDIRECT = "redirect:/payment/admin/detail/";
 
     private final PaymentService paymentService;
 
@@ -32,28 +33,25 @@ public class PaymentController {
 
     @GetMapping("/detail")
     public String paymentDetailPage(Model model) {
-        model.addAttribute(PAYMENT_ATTRIBUTE, new Payment());
+        addPaymentToModel(model, new Payment());
         return PAYMENT_DETAIL_VIEW;
     }
 
     @GetMapping("/detail/{paymentId}")
     public String paymentDetailByIdPage(@PathVariable String paymentId, Model model) {
-        Payment payment = paymentService.getPayment(paymentId);
-        model.addAttribute(PAYMENT_ATTRIBUTE, payment != null ? payment : new Payment());
+        addPaymentToModel(model, getPaymentOrEmpty(paymentId));
         return PAYMENT_DETAIL_VIEW;
     }
 
     @GetMapping("/admin/list")
     public String paymentAdminListPage(Model model) {
-        List<Payment> payments = paymentService.getAllPayments();
-        model.addAttribute(PAYMENTS_ATTRIBUTE, payments != null ? payments : new ArrayList<>());
+        addPaymentsToModel(model);
         return PAYMENT_ADMIN_LIST_VIEW;
     }
 
     @GetMapping("/admin/detail/{paymentId}")
     public String paymentAdminDetailPage(@PathVariable String paymentId, Model model) {
-        Payment payment = paymentService.getPayment(paymentId);
-        model.addAttribute(PAYMENT_ATTRIBUTE, payment != null ? payment : new Payment());
+        addPaymentToModel(model, getPaymentOrEmpty(paymentId));
         return PAYMENT_ADMIN_DETAIL_VIEW;
     }
 
@@ -66,7 +64,21 @@ public class PaymentController {
         if (payment != null) {
             paymentService.setStatus(payment, paymentStatusForm.getStatus());
         }
-        return "redirect:/payment/admin/detail/" + paymentId;
+        return PAYMENT_ADMIN_DETAIL_REDIRECT + paymentId;
+    }
+
+    private void addPaymentToModel(Model model, Payment payment) {
+        model.addAttribute(PAYMENT_ATTRIBUTE, payment);
+    }
+
+    private Payment getPaymentOrEmpty(String paymentId) {
+        Payment payment = paymentService.getPayment(paymentId);
+        return payment != null ? payment : new Payment();
+    }
+
+    private void addPaymentsToModel(Model model) {
+        List<Payment> payments = paymentService.getAllPayments();
+        model.addAttribute(PAYMENTS_ATTRIBUTE, payments != null ? payments : new ArrayList<>());
     }
 
     public static class PaymentStatusForm {
