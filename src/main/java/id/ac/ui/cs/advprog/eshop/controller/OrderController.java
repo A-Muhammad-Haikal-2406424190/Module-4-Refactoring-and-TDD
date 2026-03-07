@@ -29,6 +29,9 @@ public class OrderController {
     private static final String ORDERS_ATTRIBUTE = "orders";
     private static final String ORDER_ATTRIBUTE = "order";
     private static final String PAYMENT_ATTRIBUTE = "payment";
+    private static final String VOUCHER_CODE_KEY = "voucherCode";
+    private static final String BANK_NAME_KEY = "bankName";
+    private static final String REFERENCE_CODE_KEY = "referenceCode";
 
     private final OrderService orderService;
     private final PaymentService paymentService;
@@ -60,12 +63,7 @@ public class OrderController {
 
     @GetMapping("/pay/{orderId}")
     public String payOrderPage(@PathVariable String orderId, Model model) {
-        Order order = orderService.findById(orderId);
-        if (order != null) {
-            model.addAttribute(ORDER_ATTRIBUTE, order);
-        } else {
-            model.addAttribute(ORDER_ATTRIBUTE, new OrderPayViewModel(orderId, "", ""));
-        }
+        model.addAttribute(ORDER_ATTRIBUTE, resolveOrderPayModel(orderId));
         return ORDER_PAY_VIEW;
     }
 
@@ -78,19 +76,32 @@ public class OrderController {
             @RequestParam(value = "referenceCode", required = false) String referenceCode,
             Model model
     ) {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", voucherCode);
-        paymentData.put("bankName", bankName);
-        paymentData.put("referenceCode", referenceCode);
-
         Order order = orderService.findById(orderId);
+        Map<String, String> paymentData = buildPaymentData(voucherCode, bankName, referenceCode);
         Payment payment = paymentService.addPayment(order, method, paymentData);
-        model.addAttribute(PAYMENT_ATTRIBUTE, payment);
+        setPaymentToModel(model, payment);
         return ORDER_PAY_RESULT_VIEW;
     }
 
     private void setOrdersToModel(Model model, List<Order> orders) {
         model.addAttribute(ORDERS_ATTRIBUTE, orders);
+    }
+
+    private Object resolveOrderPayModel(String orderId) {
+        Order order = orderService.findById(orderId);
+        return order != null ? order : new OrderPayViewModel(orderId, "", "");
+    }
+
+    private Map<String, String> buildPaymentData(String voucherCode, String bankName, String referenceCode) {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put(VOUCHER_CODE_KEY, voucherCode);
+        paymentData.put(BANK_NAME_KEY, bankName);
+        paymentData.put(REFERENCE_CODE_KEY, referenceCode);
+        return paymentData;
+    }
+
+    private void setPaymentToModel(Model model, Payment payment) {
+        model.addAttribute(PAYMENT_ATTRIBUTE, payment);
     }
 
     public static class OrderForm {
