@@ -15,7 +15,10 @@ import java.util.UUID;
 @Service
 public class PaymentServiceImpl implements PaymentService {
     private static final String METHOD_VOUCHER_CODE = "VOUCHER_CODE";
+    private static final String METHOD_BANK_TRANSFER = "BANK_TRANSFER";
     private static final String VOUCHER_CODE_KEY = "voucherCode";
+    private static final String BANK_NAME_KEY = "bankName";
+    private static final String REFERENCE_CODE_KEY = "referenceCode";
     private static final String VOUCHER_PREFIX = "ESHOP";
     private static final int VOUCHER_LENGTH = 16;
     private static final int VOUCHER_DIGIT_COUNT = 8;
@@ -28,6 +31,9 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = buildNewPayment(method, paymentData);
         if (METHOD_VOUCHER_CODE.equals(method) && isVoucherCodeValid(paymentData)) {
+            payment.setStatus(Payment.SUCCESS);
+        }
+        if (METHOD_BANK_TRANSFER.equals(method) && isBankTransferValid(paymentData)) {
             payment.setStatus(Payment.SUCCESS);
         }
         paymentOrderMap.put(payment.getId(), order);
@@ -89,6 +95,17 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         return digitCount;
+    }
+
+    private boolean isBankTransferValid(Map<String, String> paymentData) {
+        String bankName = paymentData.get(BANK_NAME_KEY);
+        String referenceCode = paymentData.get(REFERENCE_CODE_KEY);
+        return hasValidBankTransferData(bankName, referenceCode);
+    }
+
+    private boolean hasValidBankTransferData(String bankName, String referenceCode) {
+        // Skeleton RED: aturan detail validasi bank transfer diimplementasikan pada tahap GREEN.
+        return false;
     }
 
     private void syncOrderStatus(Payment payment, String paymentStatus) {
