@@ -98,14 +98,20 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private boolean isBankTransferValid(Map<String, String> paymentData) {
+        if (paymentData == null) {
+            return false;
+        }
         String bankName = paymentData.get(BANK_NAME_KEY);
         String referenceCode = paymentData.get(REFERENCE_CODE_KEY);
         return hasValidBankTransferData(bankName, referenceCode);
     }
 
     private boolean hasValidBankTransferData(String bankName, String referenceCode) {
-        // Skeleton RED: aturan detail validasi bank transfer diimplementasikan pada tahap GREEN.
-        return false;
+        return isNotBlank(bankName) && isNotBlank(referenceCode);
+    }
+
+    private boolean isNotBlank(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private void syncOrderStatus(Payment payment, String paymentStatus) {
