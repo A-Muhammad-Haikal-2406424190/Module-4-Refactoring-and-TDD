@@ -8,6 +8,9 @@ import java.util.Map;
 @Builder
 @Getter
 public class Payment {
+    public static final String SUCCESS = "SUCCESS";
+    public static final String REJECTED = "REJECTED";
+
     String id;
     String method;
     String status;
@@ -24,10 +27,14 @@ public class Payment {
     }
 
     public void setStatus(String status) {
-        if ("SUCCESS".equals(status) || "REJECTED".equals(status)) {
+        if (isValidStatus(status)) {
             this.status = status;
         } else {
             throw new IllegalArgumentException();
         }
+    }
+
+    private boolean isValidStatus(String status) {
+        return SUCCESS.equals(status) || REJECTED.equals(status);
     }
 }
