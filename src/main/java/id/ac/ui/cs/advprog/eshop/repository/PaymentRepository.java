@@ -8,17 +8,13 @@ import java.util.List;
 
 @Repository
 public class PaymentRepository {
-    private List<Payment> paymentData = new ArrayList<>();
+    private final List<Payment> paymentData = new ArrayList<>();
 
     public Payment save(Payment payment) {
-        int i = 0;
-        for (Payment savedPayment : paymentData) {
-            if (savedPayment.getId().equals(payment.getId())) {
-                paymentData.remove(i);
-                paymentData.add(i, payment);
-                return payment;
-            }
-            i += 1;
+        int existingIndex = findPaymentIndexById(payment.getId());
+        if (existingIndex != -1) {
+            paymentData.set(existingIndex, payment);
+            return payment;
         }
 
         paymentData.add(payment);
@@ -36,5 +32,14 @@ public class PaymentRepository {
 
     public List<Payment> getAllPayments() {
         return paymentData;
+    }
+
+    private int findPaymentIndexById(String paymentId) {
+        for (int i = 0; i < paymentData.size(); i++) {
+            if (paymentData.get(i).getId().equals(paymentId)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
