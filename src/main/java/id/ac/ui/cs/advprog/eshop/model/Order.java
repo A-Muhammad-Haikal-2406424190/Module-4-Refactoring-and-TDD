@@ -30,19 +30,14 @@ public class Order {
 
     public Order(String id, List<Product> products, Long orderTime, String author, String status) {
         this(id, products, orderTime, author);
-
-        if (!OrderStatus.contains(status)) {
-            throw new IllegalArgumentException();
-        } else {
-            this.status = status;
-        }
+        this.setStatus(status);
     }
 
     public void setStatus(String status) {
-        if (!OrderStatus.contains(status)) {
-            throw new IllegalArgumentException();
-        } else {
+        if (OrderStatus.contains(status)) {
             this.status = status;
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 }
