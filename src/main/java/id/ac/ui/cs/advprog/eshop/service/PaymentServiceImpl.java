@@ -14,6 +14,12 @@ import java.util.UUID;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
+    private static final String METHOD_VOUCHER_CODE = "VOUCHER_CODE";
+    private static final String VOUCHER_CODE_KEY = "voucherCode";
+    private static final String VOUCHER_PREFIX = "ESHOP";
+    private static final int VOUCHER_LENGTH = 16;
+    private static final int VOUCHER_DIGIT_COUNT = 8;
+
     @Autowired
     private PaymentRepository paymentRepository;
     private final Map<String, Order> paymentOrderMap = new HashMap<>();
@@ -21,7 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = buildNewPayment(method, paymentData);
-        if ("VOUCHER_CODE".equals(method) && isVoucherCodeValid(paymentData)) {
+        if (METHOD_VOUCHER_CODE.equals(method) && isVoucherCodeValid(paymentData)) {
             payment.setStatus(Payment.SUCCESS);
         }
         paymentOrderMap.put(payment.getId(), order);
@@ -58,7 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (paymentData == null) {
             return false;
         }
-        String voucherCode = paymentData.get("voucherCode");
+        String voucherCode = paymentData.get(VOUCHER_CODE_KEY);
         return hasVoucherCodeFormat(voucherCode);
     }
 
@@ -66,20 +72,23 @@ public class PaymentServiceImpl implements PaymentService {
         if (voucherCode == null) {
             return false;
         }
-        if (voucherCode.length() != 16) {
+        if (voucherCode.length() != VOUCHER_LENGTH) {
             return false;
         }
-        if (!voucherCode.startsWith("ESHOP")) {
+        if (!voucherCode.startsWith(VOUCHER_PREFIX)) {
             return false;
         }
+        return countDigits(voucherCode) == VOUCHER_DIGIT_COUNT;
+    }
 
+    private int countDigits(String value) {
         int digitCount = 0;
-        for (char c : voucherCode.toCharArray()) {
+        for (char c : value.toCharArray()) {
             if (Character.isDigit(c)) {
                 digitCount += 1;
             }
         }
-        return digitCount == 8;
+        return digitCount;
     }
 
     private void syncOrderStatus(Payment payment, String paymentStatus) {
