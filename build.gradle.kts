@@ -23,7 +23,7 @@ java {
 
 sonar {
     properties {
-        property("sonar.projectKey", "A-Muhammad-Haikal-2406424190_Module-2-CI-CD-DevOps")
+        property("sonar.projectKey", "A-Muhammad-Haikal-2406424190_Module-4-Refactoring-and-TDD")
         property("sonar.organization", "a-muhammad-haikal-2406424190")
         property("sonar.sources", "src/main")
         property("sonar.tests", "src/test/java")
