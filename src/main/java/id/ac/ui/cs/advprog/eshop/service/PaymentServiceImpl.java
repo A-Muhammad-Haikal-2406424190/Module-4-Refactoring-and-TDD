@@ -55,12 +55,31 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private boolean isVoucherCodeValid(Map<String, String> paymentData) {
+        if (paymentData == null) {
+            return false;
+        }
         String voucherCode = paymentData.get("voucherCode");
         return hasVoucherCodeFormat(voucherCode);
     }
 
     private boolean hasVoucherCodeFormat(String voucherCode) {
-        return false;
+        if (voucherCode == null) {
+            return false;
+        }
+        if (voucherCode.length() != 16) {
+            return false;
+        }
+        if (!voucherCode.startsWith("ESHOP")) {
+            return false;
+        }
+
+        int digitCount = 0;
+        for (char c : voucherCode.toCharArray()) {
+            if (Character.isDigit(c)) {
+                digitCount += 1;
+            }
+        }
+        return digitCount == 8;
     }
 
     private void syncOrderStatus(Payment payment, String paymentStatus) {
