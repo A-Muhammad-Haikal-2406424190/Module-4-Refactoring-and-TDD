@@ -98,16 +98,19 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private boolean isBankTransferValid(Map<String, String> paymentData) {
-        if (paymentData == null) {
-            return false;
-        }
-        String bankName = paymentData.get(BANK_NAME_KEY);
-        String referenceCode = paymentData.get(REFERENCE_CODE_KEY);
-        return hasValidBankTransferData(bankName, referenceCode);
+        return hasRequiredNonBlankFields(paymentData, BANK_NAME_KEY, REFERENCE_CODE_KEY);
     }
 
-    private boolean hasValidBankTransferData(String bankName, String referenceCode) {
-        return isNotBlank(bankName) && isNotBlank(referenceCode);
+    private boolean hasRequiredNonBlankFields(Map<String, String> data, String... keys) {
+        if (data == null) {
+            return false;
+        }
+        for (String key : keys) {
+            if (!isNotBlank(data.get(key))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isNotBlank(String value) {
