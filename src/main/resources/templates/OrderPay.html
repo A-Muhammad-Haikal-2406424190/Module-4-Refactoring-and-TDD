@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Pay</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container my-2">
+    <h3>Order Payment</h3>
+
+    <table border="1" class="table table-striped table-responsive-md">
+        <tbody>
+        <tr>
+            <th>Order Id</th>
+            <td th:text="${order.id}"></td>
+        </tr>
+        <tr>
+            <th>Author</th>
+            <td th:text="${order.author}"></td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td th:text="${order.status}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <form th:action="@{/order/pay/{orderId}(orderId=${order.id})}" method="post">
+        <div class="form-group">
+            <label for="methodInput">Payment Method</label>
+            <input type="text" class="form-control mb-4 col-4" id="methodInput" name="method" placeholder="VOUCHER_CODE or BANK_TRANSFER">
+        </div>
+        <div class="form-group">
+            <label for="voucherCodeInput">Voucher Code (optional)</label>
+            <input type="text" class="form-control mb-4 col-4" id="voucherCodeInput" name="voucherCode" placeholder="ESHOP1234ABC5678">
+        </div>
+        <div class="form-group">
+            <label for="bankNameInput">Bank Name (optional)</label>
+            <input type="text" class="form-control mb-4 col-4" id="bankNameInput" name="bankName" placeholder="BCA">
+        </div>
+        <div class="form-group">
+            <label for="referenceCodeInput">Reference Code (optional)</label>
+            <input type="text" class="form-control mb-4 col-4" id="referenceCodeInput" name="referenceCode" placeholder="TRX-0001">
+        </div>
+        <button type="submit" class="btn btn-primary">Pay Now</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+</html>
