@@ -74,6 +74,28 @@ class PaymentServiceImplTest {
     }
 
     @Test
+    void testAddPaymentVoucherCodeValidShouldBeSuccess() {
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("SUCCESS", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentVoucherCodeInvalidShouldBeRejected() {
+        Map<String, String> invalidVoucherData = new HashMap<>();
+        invalidVoucherData.put("voucherCode", "ESHOPABC5678");
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", invalidVoucherData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
     void testSetStatus() {
         Payment payment = payments.get(1);
         doAnswer(invocation -> invocation.getArgument(0))
