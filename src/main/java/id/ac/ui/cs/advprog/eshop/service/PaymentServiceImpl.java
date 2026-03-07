@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eshop.service;
 
+import id.ac.ui.cs.advprog.eshop.enums.OrderStatus;
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.repository.PaymentRepository;
@@ -19,12 +20,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
-        Payment payment = new Payment(
-                UUID.randomUUID().toString(),
-                method,
-                Payment.REJECTED,
-                paymentData
-        );
+        Payment payment = buildNewPayment(method, paymentData);
         paymentOrderMap.put(payment.getId(), order);
         return paymentRepository.save(payment);
     }
@@ -32,16 +28,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment setStatus(Payment payment, String status) {
         payment.setStatus(status);
-
-        Order order = paymentOrderMap.get(payment.getId());
-        if (order != null) {
-            if (Payment.SUCCESS.equals(status)) {
-                order.setStatus("SUCCESS");
-            } else if (Payment.REJECTED.equals(status)) {
-                order.setStatus("FAILED");
-            }
-        }
-
+        syncOrderStatus(payment, status);
         return paymentRepository.save(payment);
     }
 
@@ -53,5 +40,27 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public List<Payment> getAllPayments() {
         return paymentRepository.getAllPayments();
+    }
+
+    private Payment buildNewPayment(String method, Map<String, String> paymentData) {
+        return new Payment(
+                UUID.randomUUID().toString(),
+                method,
+                Payment.REJECTED,
+                paymentData
+        );
+    }
+
+    private void syncOrderStatus(Payment payment, String paymentStatus) {
+        Order order = paymentOrderMap.get(payment.getId());
+        if (order == null) {
+            return;
+        }
+
+        if (Payment.SUCCESS.equals(paymentStatus)) {
+            order.setStatus(OrderStatus.SUCCESS.getValue());
+        } else if (Payment.REJECTED.equals(paymentStatus)) {
+            order.setStatus(OrderStatus.FAILED.getValue());
+        }
     }
 }
