@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eshop.service;
 
+import id.ac.ui.cs.advprog.eshop.enums.OrderStatus;
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.model.Product;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -122,6 +124,86 @@ class PaymentServiceImplTest {
     }
 
     @Test
+    void testAddPaymentVoucherCodeNullPaymentDataShouldBeRejected() {
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", null);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentVoucherCodeMissingVoucherKeyShouldBeRejected() {
+        Map<String, String> invalidVoucherData = new HashMap<>();
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", invalidVoucherData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentVoucherCodeWrongPrefixShouldBeRejected() {
+        Map<String, String> invalidVoucherData = new HashMap<>();
+        invalidVoucherData.put("voucherCode", "XSHOP1234ABC5678");
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", invalidVoucherData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentVoucherCodeWrongDigitCountShouldBeRejected() {
+        Map<String, String> invalidVoucherData = new HashMap<>();
+        invalidVoucherData.put("voucherCode", "ESHOPABCDABCD123");
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "VOUCHER_CODE", invalidVoucherData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentBankTransferMissingFieldShouldBeRejected() {
+        Map<String, String> invalidBankTransferData = new HashMap<>();
+        invalidBankTransferData.put("bankName", "BCA");
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "BANK_TRANSFER", invalidBankTransferData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentBankTransferBlankReferenceCodeShouldBeRejected() {
+        Map<String, String> invalidBankTransferData = new HashMap<>();
+        invalidBankTransferData.put("bankName", "BCA");
+        invalidBankTransferData.put("referenceCode", "   ");
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "BANK_TRANSFER", invalidBankTransferData);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
+    void testAddPaymentBankTransferNullPaymentDataShouldBeRejected() {
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.addPayment(order, "BANK_TRANSFER", null);
+
+        assertEquals("REJECTED", result.getStatus());
+    }
+
+    @Test
     void testSetStatus() {
         Payment payment = payments.get(1);
         doAnswer(invocation -> invocation.getArgument(0))
@@ -132,6 +214,44 @@ class PaymentServiceImplTest {
         verify(paymentRepository, times(1)).save(any(Payment.class));
         assertEquals("SUCCESS", result.getStatus());
     }
+
+    @Test
+    void testSetStatusSuccessShouldSyncOrderStatus() {
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment createdPayment = paymentService.addPayment(order, "VOUCHER_CODE", paymentData);
+        paymentService.setStatus(createdPayment, Payment.SUCCESS);
+
+        assertEquals(OrderStatus.SUCCESS.getValue(), order.getStatus());
+    }
+
+    @Test
+    void testSetStatusRejectedShouldSyncOrderStatus() {
+        doAnswer(invocation -> invocation.getArgument(0))
+                .when(paymentRepository).save(any(Payment.class));
+
+        Payment createdPayment = paymentService.addPayment(order, "VOUCHER_CODE", paymentData);
+        paymentService.setStatus(createdPayment, Payment.REJECTED);
+
+        assertEquals(OrderStatus.FAILED.getValue(), order.getStatus());
+    }
+
+        @Test
+        void testSyncOrderStatusUnknownPaymentStatusShouldNotChangeOrderStatus() throws Exception {
+        doAnswer(invocation -> invocation.getArgument(0))
+            .when(paymentRepository).save(any(Payment.class));
+
+        Payment createdPayment = paymentService.addPayment(order, "VOUCHER_CODE", paymentData);
+
+        Method syncOrderStatus = PaymentServiceImpl.class.getDeclaredMethod(
+            "syncOrderStatus", Payment.class, String.class
+        );
+        syncOrderStatus.setAccessible(true);
+        syncOrderStatus.invoke(paymentService, createdPayment, "UNKNOWN_STATUS");
+
+        assertEquals(OrderStatus.WAITING_PAYMENT.getValue(), order.getStatus());
+        }
 
     @Test
     void testGetPaymentIfFound() {

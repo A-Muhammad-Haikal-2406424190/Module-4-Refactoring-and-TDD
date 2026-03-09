@@ -38,6 +38,21 @@ class PaymentTest {
     }
 
     @Test
+    void testCreatePaymentUsingNoArgsConstructor() {
+        Payment payment = new Payment();
+
+        payment.id = "pay-1";
+        payment.method = "VOUCHER_CODE";
+        payment.paymentData = this.paymentData;
+        payment.setStatus("SUCCESS");
+
+        assertEquals("pay-1", payment.getId());
+        assertEquals("VOUCHER_CODE", payment.getMethod());
+        assertEquals("SUCCESS", payment.getStatus());
+        assertSame(this.paymentData, payment.getPaymentData());
+    }
+
+    @Test
     void testCreatePaymentInvalidStatus() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Payment("pay-1", "VOUCHER_CODE", "MEOW", this.paymentData));
