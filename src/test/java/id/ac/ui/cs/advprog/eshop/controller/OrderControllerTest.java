@@ -6,7 +6,6 @@ import id.ac.ui.cs.advprog.eshop.service.OrderService;
 import id.ac.ui.cs.advprog.eshop.service.PaymentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,13 +14,13 @@ import org.springframework.ui.Model;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -127,12 +126,11 @@ class OrderControllerTest {
                 model
         );
 
-        ArgumentCaptor<Map<String, String>> paymentDataCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(paymentService).addPayment(eq(order), eq("VOUCHER_CODE"), paymentDataCaptor.capture());
-        Map<String, String> paymentData = paymentDataCaptor.getValue();
-        assertEquals("ESHOP1234ABC5678", paymentData.get("voucherCode"));
-        assertEquals("BCA", paymentData.get("bankName"));
-        assertEquals("REF-001", paymentData.get("referenceCode"));
+        verify(paymentService).addPayment(eq(order), eq("VOUCHER_CODE"), argThat(paymentData ->
+            "ESHOP1234ABC5678".equals(paymentData.get("voucherCode"))
+                && "BCA".equals(paymentData.get("bankName"))
+                && "REF-001".equals(paymentData.get("referenceCode"))
+        ));
 
         assertEquals("OrderPayResult", viewName);
         assertEquals(payment, model.getAttribute("payment"));
@@ -149,12 +147,11 @@ class OrderControllerTest {
         Model model = new ExtendedModelMap();
         controller.payOrderPost(orderId, "BANK_TRANSFER", null, null, null, model);
 
-        ArgumentCaptor<Map<String, String>> paymentDataCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(paymentService).addPayment(eq(order), eq("BANK_TRANSFER"), paymentDataCaptor.capture());
-        Map<String, String> paymentData = paymentDataCaptor.getValue();
-        assertNull(paymentData.get("voucherCode"));
-        assertNull(paymentData.get("bankName"));
-        assertNull(paymentData.get("referenceCode"));
+        verify(paymentService).addPayment(eq(order), eq("BANK_TRANSFER"), argThat(paymentData ->
+            paymentData.get("voucherCode") == null
+                && paymentData.get("bankName") == null
+                && paymentData.get("referenceCode") == null
+        ));
     }
 
     @Test
